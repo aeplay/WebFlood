@@ -1,6 +1,6 @@
 uniform float drainageAmount;
 
-vec4 simulationStep(vec2 pos, vec2 posLeft, vec2 posRight, vec2 posTop, vec2 posBottom) {
+vec4 simulationStep() {
     vec4 X1 = simData(posLeft);
     vec4 X2 = simData(posRight);
     vec4 Y1 = simData(posTop);

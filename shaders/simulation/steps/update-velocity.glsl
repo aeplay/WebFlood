@@ -4,7 +4,7 @@ uniform float gravity;
 
 uniform sampler2D frictionMap;
 
-vec4 simulationStep(vec2 pos, vec2 posLeft, vec2 posRight, vec2 posTop, vec2 posBottom) {
+vec4 simulationStep() {
     vec4 here = simData(pos);
 
     if (H(here) < 0.0) return vec4(0.0, 0.0, H(here), T(here));

@@ -3,42 +3,24 @@
 	<head>
 		<title>WebFlood</title>
 		<meta charset="utf-8">
-		<style type="text/css">
-			body {
-				background:#ffffff;
-				color:#000;
-				padding:0;
-				margin:0;
-				overflow:hidden;
-				font-family: sans-serif;
+		<link rel="stylesheet" href="main.css">
 
-				-webkit-touch-callout: none;
-				-webkit-user-select: none;
-				-khtml-user-select: none;
-				-moz-user-select: none;
-				-ms-user-select: none;
-				user-select: none;
-			}
+		<script src="deps/underscore-min.js"></script>
+		<script src="deps/GLOW.js"></script>
+		<script src="lib/helpers.js"></script>
 
-			body>p {
-				position: absolute;
-				left: 1rem;
-				top: 0;
-			}
+		<script src="deps/perlin.js"></script>
+		<script src="lib/terrainGenerator.js"></script>
+		<script src="deps/tiff.js"></script>
+		<script src="lib/write16bitTiff.js"></script>
 
-			#scenarioName {
-				font-family: inherit;
-				font-size: 1.5em;
-			}
-
-			input[type=number] {
-				width: 5em;
-			}
-		</style>
+		<script src="lib/tiledGrid.js"></script>
+		<script src="lib/flipFlopFBO.js"></script>
+		<script src="lib/camera.js"></script>
 	</head>
 	<body>
 		<div id="container"></div>
-		<p><input type="text" id="scenarioName" value="no scenario loaded..."><br>
+		<p>
 			<span id="load">
 				<br>
 				Load scenario:<br><input type="file" id="files" name="files[]" multiple /><br><br>
@@ -50,44 +32,36 @@
 					<option value="1024">1024*1024 (unstable)</option>
 				</select> <br><br>
 			</span>
-			<span id="run" style="display: none;">
-				<button id="saveWater">Save Water Height</button><button id="saveTerrain">Save Terrain</button><br><br>
+			<span id="run">
+				<input type="text" id="scenarioName" value="no scenario loaded..."><br>
+				<button id="saveWater">Save Water Height</button>
+				<button id="saveTerrain">Save Terrain</button><br><br>
 				<a id="closeScenario" href="index.html">Close Scenario</a><br><br>
-				Frame duration: <span id="frameDuration">???</span><br>Simulation Steps <input type="number" value="0" id="stepsPerFrame"> per frame<br><br>
+
+				Frame duration: <span id="frameDuration">???</span><br>
+				Simulation Steps <input type="number" value="0" id="stepsPerFrame"> per frame<br><br>
+
 				Source Water Height: <input id="sourceWaterHeight" type="number" value="0.0024" step="0.005"/><br>
 				Source Water Velocity: <input id="sourceWaterVelocity" type="number" value="0.00001" step="0.0005"/><br>
 				Gravity: <input id="gravity" type="number" value="9.81" step="0.001"/><br><br>
+
 				<em>Friction</em> -
 				Manning coefficient: <input id="manningCoefficient" type="number" value="0.070" step="0.001"/><br><br>
 				Drainage: <input id="drainageAmount" type="number" value="0" step="0.00001"/><br><br>
-				<!--Amount of water: <span id="waterSum"></span><br><br>-->
-				<input type="checkbox" checked id="toggleWater"><label for="toggleWater">Display Water</label><br>
-				<input type="checkbox" id="toggleFloodDuration"><label for="toggleWater">Display Flood Duration</label><br>
-				<input type="checkbox" id="toggleMaxVelocity"><label for="toggleWater">Display Max Velocity</label><br>
-				<input type="checkbox" id="toggleMaxDepth"><label for="toggleWater">Display Max Depth</label><br><br>
+
+				<input type="checkbox" checked id="showWater"><label for="showWater">Display Water</label><br>
+				<input type="checkbox" id="showFloodDuration"><label for="showFloodDuration">Display Flood Duration</label><br>
+				<input type="checkbox" id="showMaxVelocity"><label for="showMaxVelocity">Display Max Velocity</label><br>
+				<input type="checkbox" id="showMaxDepth"><label for="showMaxDepth">Display Max Depth</label><br><br>
 			</span>
 		</p>
-		<script type="text/javascript" src="underscore-min.js"></script>
-		<script type="text/javascript" src="GLOW.js"></script>
-		<script type="text/javascript" src="helpers.js"></script>
 
-		<script type="text/javascript" src="perlin.js"></script>
-		<script type="text/javascript" src="terrainGenerator.js"></script>
-		<script type="text/javascript" src="tiff.js"></script>
-		<script type="text/javascript" src="write16bitTiff.js"></script>
+		<script src="ui.js"></script>
+		<script src="simulation.js"></script>
+		<script src="visualisation.js"></script>
 
-		<script type="text/javascript" src="tiledGrid.js"></script>
-		<script type="text/javascript" src="flipFlopFBO.js"></script>
-
-		<script type="text/javascript" src="camera.js"></script>
-		<script type="text/javascript" src="simulation.js"></script>
-		<script type="text/javascript" src="visualisation.js"></script>
-
-		<script type="text/javascript">
-			var devicePixelRatio = 1.0// || window.devicePixelRatio || 1;
-
-			// set the size of the drawingBuffer based on the size it's displayed.
-
+		<script>
+			var devicePixelRatio = 1.0;// || window.devicePixelRatio || 1;
 			var context = new GLOW.Context({
 				clear: {red: 1, green: 1, blue: 1},
 				preserveDrawingBuffer: true,
@@ -211,6 +185,36 @@
 
 				Visualisation.init(satImage);
 
+				UI.init({
+					numbers: {
+						"stepsPerFrame": Simulation.parameters,
+						"sourceWaterHeight": Simulation.parameters,
+						"sourceWaterVelocity": Simulation.parameters,
+						"gravity": Simulation.parameters,
+						"manningCoefficient": Simulation.parameters,
+						"drainageAmount": Simulation.parameters
+					},
+
+					toggles: {
+						"showWater": Visualisation.toggles,
+						"showFloodDuration": Visualisation.toggles,
+						"showMaxVelocity": Visualisation.toggles,
+						"showMaxDepth": Visualisation.toggles
+					},
+
+					triggers: {
+						"saveWater": function () {
+							Visualisation.saveWaterNextFrame = true;
+						},
+						"saveTerrain": function () {
+							var tiff = write16bitTiff(terrainData, gridResolution, gridResolution);
+							var filename = document.getElementById("scenarioName").value
+											.trim().replace(/\s/g, "_") + "_terrain.tif";
+							saveContent(uint8ToBase64(tiff), filename);
+						}
+					}
+				});
+
 				var render = function () {
 					window.requestAnimationFrame(render);
 
@@ -241,95 +245,6 @@
 
 				window.requestAnimationFrame(render);
 			};
-
-			var showWater = true;
-			var showFloodDuration = false;
-			var showMaxVelocity = false;
-			var showMaxDepth = false;
-
-			var stepsPerFrame = document.getElementById("stepsPerFrame").valueAsNumber;
-
-			var saveWaterNextFrame = false;
-
-			var sourceWaterHeight = document.getElementById("sourceWaterHeight").valueAsNumber;
-			var sourceWaterVelocity = document.getElementById("sourceWaterVelocity").valueAsNumber;
-
-			var gravity = document.getElementById("gravity").valueAsNumber;
-			var correctGravity = function (g) {
-				var metersPerWorld = worldSize;
-				return g/metersPerWorld;
-			};
-			var correctedGravity = correctGravity(gravity);
-			console.log(correctedGravity);
-
-			var manningCoefficient = document.getElementById("manningCoefficient").valueAsNumber;
-			var correctManningCoefficient = function (n) {
-				var metersPerWorld = worldSize;
-				return n * Math.pow(metersPerWorld, 1/3);
-			};
-			var correctedManningCoefficient = correctManningCoefficient(manningCoefficient);
-			console.log(correctedManningCoefficient);
-
-			var drainageAmount = document.getElementById("drainageAmount").valueAsNumber;
-
-			document.getElementById("stepsPerFrame").onchange = function () {
-				stepsPerFrame = this.valueAsNumber;
-			};
-
-			document.getElementById("sourceWaterHeight").onchange = function () {
-				sourceWaterHeight = this.valueAsNumber;
-				console.log("sourceWaterHeight", sourceWaterHeight);
-			};
-
-			document.getElementById("sourceWaterVelocity").onchange = function () {
-				sourceWaterVelocity = this.valueAsNumber;
-				console.log("sourceWaterVelocity", sourceWaterVelocity);
-			};
-
-			document.getElementById("gravity").onchange = function () {
-				gravity = this.valueAsNumber;
-				console.log("gravity", gravity);
-				correctedGravity = correctGravity(gravity);
-				console.log(correctedGravity);
-			};
-
-			document.getElementById("manningCoefficient").onchange = function () {
-				manningCoefficient = this.valueAsNumber;
-				console.log("manningCoefficient", manningCoefficient);
-				correctedManningCoefficient = correctManningCoefficient(manningCoefficient);
-				console.log(correctedManningCoefficient);
-			};
-
-			document.getElementById("drainageAmount").onchange = function () {
-				drainageAmount = this.valueAsNumber;
-				console.log("drainageAmount", drainageAmount);
-			};
-
-			document.getElementById("toggleWater").onclick = function () {
-				showWater = this.checked;
-			};
-
-			document.getElementById("toggleFloodDuration").onclick = function () {
-				showFloodDuration = this.checked;
-			};
-
-			document.getElementById("toggleMaxVelocity").onclick = function () {
-				showMaxVelocity = this.checked;
-			};
-
-			document.getElementById("toggleMaxDepth").onclick = function () {
-				showMaxDepth = this.checked;
-			};
-
-			document.getElementById("saveWater").onclick = function () {
-				saveWaterNextFrame = true;
-			};
-
-			document.getElementById("saveTerrain").onclick = function () {
-				var tiff = write16bitTiff(terrainData, gridResolution, gridResolution);
-				var filename = document.getElementById("scenarioName").value.trim().replace(/\s/g, "_") + "_terrain.tif";
-				saveContent(uint8ToBase64(tiff), filename);
-			}
 		</script>
 	</body>
 </html>

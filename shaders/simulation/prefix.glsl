@@ -9,11 +9,11 @@ uniform float dt;
 uniform float sourceWaterHeight;
 uniform float sourceWaterVelocity;
 
-varying vec2 uv;
-varying vec2 uvLeft;
-varying vec2 uvRight;
-varying vec2 uvTop;
-varying vec2 uvBottom;
+varying vec2 pos;
+varying vec2 posLeft;
+varying vec2 posRight;
+varying vec2 posTop;
+varying vec2 posBottom;
 
 #define V(D)  D.xy
 #define Vx(D) D.x
@@ -54,8 +54,8 @@ vec4 simData (vec2 pos) {
     return data;
 }
 
-vec4 simulationStep(vec2, vec2, vec2, vec2, vec2);
+vec4 simulationStep();
 
 void main(void) {
-    gl_FragColor = simulationStep(uv, uvLeft, uvRight, uvTop, uvBottom);
+    gl_FragColor = simulationStep();
 }

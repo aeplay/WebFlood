@@ -1,4 +1,13 @@
+var gridSize = 1024;
+
 Visualisation = {
+	toggles: {
+		showWater: true,
+		showFloodDuration: false,
+		showMaxVelocity: false,
+		showMaxDepth: false
+	},
+
 	init: function (satImage) {
 		var flowVizFBO = new GLOW.FBO({
 			width: Math.min(gridResolution, 512),
@@ -12,7 +21,6 @@ Visualisation = {
 		var flowVizStep = new GLOW.Shader({
 			vertexShader: loadSynchronous("shaders/id-v.glsl"),
 			fragmentShader: loadSynchronous("shaders/flow-viz-f.glsl"),
-
 			data: {
 				noise: new GLOW.Texture( { data: "noise.png", minFilter:GL.NEAREST } ),
 				vertices: GLOW.Geometry.Plane.vertices(),
@@ -20,12 +28,6 @@ Visualisation = {
 				gridSpacing: new GLOW.Float(1/gridResolution),
 				time: new GLOW.Float(0)
 			},
-
-			interleave: {
-				vertices: false,
-				uvs: false
-			},
-
 			indices: GLOW.Geometry.Plane.indices()
 		});
 
@@ -34,18 +36,12 @@ Visualisation = {
 		var waterSumShader = new GLOW.Shader({
 			vertexShader: loadSynchronous("shaders/id-v.glsl"),
 			fragmentShader: loadSynchronous("shaders/sum-down-water-f.glsl"),
-
 			data: {
 				water: undefined,
 				pixelWidth: undefined,
 				vertices: GLOW.Geometry.Plane.vertices(),
 				uvs: GLOW.Geometry.Plane.uvs()
 			},
-
-			interleave: {
-				vertices: false
-			},
-
 			indices: GLOW.Geometry.Plane.indices()
 		});
 
@@ -82,11 +78,6 @@ Visualisation = {
 				vertices: GLOW.Geometry.Plane.vertices(),
 				uvs: GLOW.Geometry.Plane.uvs()
 			},
-
-			interleave: {
-				vertices: false
-			},
-
 			indices: GLOW.Geometry.Plane.indices()
 		});
 
@@ -196,8 +187,8 @@ Visualisation = {
 //						waterSumEncodeFBO.unbind();
 //					}
 
-			if (saveWaterNextFrame) {
-				saveWaterNextFrame = false;
+			if (Visualisation.saveWaterNextFrame) {
+				Visualisation.saveWaterNextFrame = false;
 				var waterSumEncodeFBO = waterSumEncodeFBOs[0];
 				waterSumEncodeFBO.bind();
 				waterSumEncodeShader.uniforms.amplification.data = new GLOW.Float(1);
@@ -264,17 +255,18 @@ Visualisation = {
 				meshTile.uniforms.texture.data = Simulation.state.texture;
 				meshTile.uniforms.damage.data = Simulation.damage.texture;
 				meshTile.uniforms.toggles.data = new GLOW.Vector4(
-					showFloodDuration ? 1.0 : 0.0,
-					showMaxVelocity ? 1.0 : 0.0,
-					showMaxDepth ? 1.0 : 0.0,
+					Visualisation.toggles.showFloodDuration ? 1.0 : 0.0,
+					Visualisation.toggles.showMaxVelocity ? 1.0 : 0.0,
+					Visualisation.toggles.showMaxDepth ? 1.0 : 0.0,
 					1.0
 				);
 				meshTile.draw();
 			});
 
-			if (showWater) {
+			if (Visualisation.toggles.showWater) {
 
-				context.enableBlend(true, {equation: GL.FUNC_ADD, src: GL.SRC_ALPHA, dst: GL.ONE_MINUS_SRC_ALPHA});
+				context.enableBlend(true, {
+					equation: GL.FUNC_ADD, src: GL.SRC_ALPHA, dst: GL.ONE_MINUS_SRC_ALPHA});
 
 				//context.enablePolygonOffset(1, 10);
 
