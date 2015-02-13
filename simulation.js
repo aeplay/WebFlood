@@ -1,35 +1,42 @@
-var DT = 1/4;
-var gridResolution = parseInt(getParameterByName("res")) || 256;
-var worldSize = 8500;
-var inputHeightScale = 160;
-
 var Simulation = {
 	parameters: {},
-	init: function (waterData, terrainData, startNSteps, frictionData) {
-		// layout
-		// x: x velocity
-		// y: y velocity
-		// z: water height
-		// w: terrain height
-		var initialConditions = new Float32Array(gridResolution * gridResolution * 4);
-		var p;
+	init: function (settings) {
+		settings = _.defaults(settings, {
+			terrain: null,
+			resolution: 256,
+			worldSize: 1,
+			heightScale: 1,
+			dt: 0.01,
+			initialStepCount: 0,
+			gravity: 9.81,
+			manningCoefficient: 0.013,
+			sourceWaterHeight: 0,
+			sourceWaterVelocity: 0
+		});
 
-		if (waterData) for (p = 0; p < terrainData.length; p++)
-			initialConditions[p * 4 + 2] = (waterData[p] - 0.5) * 2 / (worldSize);
-		else for (p = 0; p < terrainData.length; p++)
-			initialConditions[p * 4 + 2] = -0.01;//0.04 - terrainData[p] / (worldSize);
+		_.pairs(settings).forEach(function (pair) {console.log(pair[0], pair[1])});
+		this.settings = settings;
+		UI.setNumbers(settings);
 
-		for (p = 0; p < terrainData.length; p++)
-			initialConditions[p * 4 + 3] = inputHeightScale * terrainData[p] / (worldSize)
+		// layout: (x, y = velocity, z = water height, w = terrain height)
+		var initialConditions = new Float32Array(settings.resolution * settings.resolution * 4);
 
-		if (frictionData) {
-			var frictionMap = new Float32Array(gridResolution * gridResolution * 4);
-			for (p = 0; p < frictionMap.length; p++) frictionMap[p * 4] = frictionData[p];
-		}
+		if (settings.water) for (var p = 0; p < settings.terrain.length; p++)
+			initialConditions[p * 4 + 2] = (settings.water[p] - 0.5) * 2 / (settings.worldSize);
+		else for (p = 0; p < settings.terrain.length; p++)
+			initialConditions[p * 4 + 2] = -0.0001;//0.04 - data.terrain[p] / (settings.worldSize);
 
-		Simulation.state = new FlipFlopFBO({
-			width: gridResolution,
-			height: gridResolution,
+		for (p = 0; p < settings.terrain.length; p++)
+			initialConditions[p * 4 + 3] = settings.heightScale * settings.terrain[p] / (settings.worldSize)
+
+		var frictionMap = new Float32Array(settings.resolution * settings.resolution * 4);
+		if (settings.frictionMap)
+			for (p = 0; p < frictionMap.length; p++) frictionMap[p * 4] = settings.frictionMap[p];
+		else for (p = 0; p < frictionMap.length; p++) frictionMap[p * 4] = 1.0;
+
+			Simulation.state = new FlipFlopFBO({
+			width: settings.resolution,
+			height: settings.resolution,
 			type: GL.FLOAT,
 			magFilter: GL.LINEAR,
 			minFilter: GL.LINEAR,
@@ -47,8 +54,8 @@ var Simulation = {
 					texture: undefined,
 					vertices: GLOW.Geometry.Plane.vertices(),
 					uvs: GLOW.Geometry.Plane.uvs(),
-					unit: new GLOW.Float(1/gridResolution),
-					dt: new GLOW.Float(DT),
+					unit: new GLOW.Float(1/settings.resolution),
+					dt: new GLOW.Float(settings.dt),
 					sourceWaterHeight: new GLOW.Float(0),
 					sourceWaterVelocity: new GLOW.Float(0)
 				}),
@@ -64,8 +71,8 @@ var Simulation = {
 
 		var frictionTexture = new GLOW.Texture({
 			data: frictionMap,
-			width: gridResolution,
-			height: gridResolution,
+			width: settings.resolution,
+			height: settings.resolution,
 			type: GL.FLOAT
 		});
 
@@ -82,8 +89,8 @@ var Simulation = {
 		];
 
 		Simulation.damage = new FlipFlopFBO({
-			width: gridResolution,
-			height: gridResolution,
+			width: settings.resolution,
+			height: settings.resolution,
 			type: GL.FLOAT,
 			magFilter: GL.NEAREST,
 			minFilter: GL.NEAREST,
@@ -96,8 +103,21 @@ var Simulation = {
 			data: {
 				texture: undefined,
 				damage: undefined,
-				dt: new GLOW.Float(DT),
+				dt: new GLOW.Float(settings.dt),
 				inputPixelWidth: new GLOW.Float(1/2),
+				vertices: GLOW.Geometry.Plane.vertices(),
+				uvs: GLOW.Geometry.Plane.uvs()
+			},
+			indices: GLOW.Geometry.Plane.indices()
+		});
+
+		var paintingStep = new GLOW.Shader({
+			vertexShader: loadSynchronous("shaders/id-v.glsl"),
+			fragmentShader: loadSynchronous("shaders/simulation/painting-f.glsl"),
+			data: {
+				texture: undefined,
+				center: new GLOW.Vector2(0, 0),
+				height: new GLOW.Float(0.01),
 				vertices: GLOW.Geometry.Plane.vertices(),
 				uvs: GLOW.Geometry.Plane.uvs()
 			},
@@ -108,20 +128,20 @@ var Simulation = {
 			stepsPerFrame: 0,
 			set sourceWaterHeight (height) {
 				Simulation.steps.forEach(function (step) {
-					step.uniforms.sourceWaterHeight.data = new GLOW.Float(height);
+					step.uniforms.sourceWaterHeight.data = new GLOW.Float(height / settings.worldSize);
 				});
 			},
 			set sourceWaterVelocity (velocity) {
 				Simulation.steps.forEach(function (step) {
-					step.uniforms.sourceWaterVelocity.data = new GLOW.Float(velocity);
+					step.uniforms.sourceWaterVelocity.data = new GLOW.Float(velocity / settings.worldSize);
 				});
 			},
 			set manningCoefficient (n) {
-				var correctedN = n * Math.pow(worldSize, 1/3);
+				var correctedN = n * Math.pow(settings.worldSize, 1/3);
 				velocityIntegrationStep.uniforms.manningCoefficient.data = new GLOW.Float(correctedN);
 			},
 			set gravity (g) {
-				var correctedG = g/worldSize;
+				var correctedG = g/settings.worldSize;
 				velocityIntegrationStep.uniforms.gravity.data = new GLOW.Float(correctedG);
 			},
 			set drainageAmount (drainageAmount) {
@@ -129,14 +149,25 @@ var Simulation = {
 			}
 		};
 
-		var t = 0;
-		var nStepsTotal = startNSteps || 0;
+		Simulation.t = 0;
+		Simulation.nStepsTotal = settings.initialStepCount;
 
 		Simulation.update = function () {
 			context.enableDepthTest(false);
 
+			if (UI.painting) {
+				paintingStep.uniforms.center.data = (new GLOW.Vector2).copy(
+					Visualisation.displayToSimulationPosition(
+					cursorToDisplayPosition(UI.cursorX, UI.cursorY)));
+				paintingStep.uniforms.texture.data = Simulation.state.texture;
+				Simulation.state.target.bind();
+				paintingStep.draw();
+				Simulation.state.target.unbind();
+				Simulation.state.flip();
+			}
+
 			for (var i = 0; i < Simulation.parameters.stepsPerFrame; i++) {
-				t += DT;
+				Simulation.t += settings.dt;
 
 				Simulation.steps.forEach(function (step) {
 					Simulation.state.target.bind();
@@ -146,7 +177,7 @@ var Simulation = {
 					Simulation.state.flip();
 				});
 
-				nStepsTotal++;
+				Simulation.nStepsTotal++;
 
 				Simulation.damage.target.bind();
 				damageStep.uniforms.texture.data = Simulation.state.texture;

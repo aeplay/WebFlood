@@ -26,5 +26,5 @@ void main(void) {
         maxHeight = data.z;
     }
 
-    gl_FragColor = vec4(oldDamage.r + data.z * 1.0 * dt, maxVelocity, maxHeight, oldDamage.a);
+    gl_FragColor = vec4(oldDamage.r + data.z > 0.0 ? dt : 0.0, maxVelocity, maxHeight, oldDamage.a);
 }

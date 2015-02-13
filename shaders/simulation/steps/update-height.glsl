@@ -18,12 +18,13 @@ vec4 simulationStep() {
         if ((H(X1) > 0.000001 && L(X1) > T(here) + 0.000001)
         ||  (H(X2) > 0.000001 && L(X2) > T(here) + 0.000001)
         ||  (H(Y1) > 0.000001 && L(Y1) > T(here) + 0.000001)
-        ||  (H(Y2) > 0.000001 && L(Y2) > T(here) + 0.000001)) newHeight = 0.000003;
+        ||  (H(Y2) > 0.000001 && L(Y2) > T(here) + 0.000001)) newHeight = 0.0000003;
         else newHeight = H(here);
     } else {
         float fluxArea = max(H(here), 0.01);
         newHeight = H(here) - fluxArea * velocityDivergence * dt;
         newHeight -= drainageAmount;
+        newHeight = max(-0.00001, newHeight);
     }
 
     return vec4(V(here), newHeight, T(here));

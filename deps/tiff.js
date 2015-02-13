@@ -4,6 +4,10 @@
 
 "use strict";
 
+function tiffData(sourceData) {
+	return (new TIFFParser()).parseTIFF(sourceData).data;
+}
+
 function TIFFParser() {
 	this.tiffDataView = undefined;
 	this.littleEndian = undefined;

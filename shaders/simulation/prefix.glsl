@@ -29,24 +29,24 @@ vec4 simData (vec2 pos) {
 
     if (pos.x < minExtent) {
         vec4 borderData = texture2D(texture, vec2(minExtent, clamp(pos.y, minExtent, maxExtent)));
-        data.x = sourceWaterHeight > borderData.w ? sourceWaterVelocity : 0.0;
-        data.z = sourceWaterHeight - borderData.w;
+        data.x = 0.0;
+        data.z = borderData.z;
         data.w = borderData.w;
     } else if (pos.x > maxExtent) {
         vec4 borderData = texture2D(texture, vec2(maxExtent, clamp(pos.y, minExtent, maxExtent)));
-        data.x = max(borderData.x, 0.0);
+        data.x = 0.0;
         data.z = borderData.z;
         data.w = borderData.w;
     }
 
     if (pos.y < minExtent) {
         vec4 borderData = texture2D(texture, vec2(clamp(pos.x, minExtent, maxExtent), minExtent));
-        data.y = 0.0;
-        data.z = borderData.z;
+        data.y = sourceWaterHeight > borderData.w ? sourceWaterVelocity : 0.0;
+        data.z = sourceWaterHeight - borderData.w;
         data.w = borderData.w;
     } else if (pos.y > maxExtent) {
         vec4 borderData = texture2D(texture, vec2(clamp(pos.x, minExtent, maxExtent), maxExtent));
-        data.y = 0.0;
+        data.y = max(borderData.y, 0.0);
         data.z = borderData.z;
         data.w = borderData.w;
     }
