@@ -27,6 +27,8 @@ vec4 simulationStep() {
     vec2 frictionSlope = V(here) * length(V(here)) * pow(n, 2.0) / pow(H(here), 4.0/3.0);
 
     vec2 totalSlope = slope + frictionSlope;
+
+    // make sure new slope doesn't point in other direction
     totalSlope.x = slope.x < 0.0 ? min(totalSlope.x, 0.0) : max(totalSlope.x, 0.0);
     totalSlope.x = slope.x == 0.0 ? 0.0 : totalSlope.x;
     totalSlope.y = slope.y < 0.0 ? min(totalSlope.y, 0.0) : max(totalSlope.y, 0.0);

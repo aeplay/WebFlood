@@ -2,25 +2,27 @@
     precision highp float;
 #endif
 
+// main texture and uniform inputs
+
 uniform sampler2D texture;
-uniform float unit;
-uniform float time;
-uniform float dt;
+uniform float unit, time, dt;
 uniform float sourceWaterHeight;
 uniform float sourceWaterVelocity;
 
-varying vec2 pos;
-varying vec2 posLeft;
-varying vec2 posRight;
-varying vec2 posTop;
-varying vec2 posBottom;
+// current and neighbor positions, passed from vertex shader
 
-#define V(D)  D.xy
-#define Vx(D) D.x
-#define Vy(D) D.y
-#define H(D)  D.z
-#define T(D)  D.w
-#define L(D)  H(D) + T(D)
+varying vec2 pos, posLeft, posRight, posTop, posBottom;
+
+// macros to access components of simulation data vector
+
+#define V(D)  D.xy         // velocity
+#define Vx(D) D.x          // velocity (x-component)
+#define Vy(D) D.y          // velocity (y-component)
+#define H(D)  D.z          // water height
+#define T(D)  D.w          // terrain height
+#define L(D)  H(D) + T(D)  // water level
+
+// query (and interpolate) simulation data from texture
 
 vec4 simData (vec2 pos) {
     vec4 data = texture2D(texture, pos);
@@ -54,7 +56,12 @@ vec4 simData (vec2 pos) {
     return data;
 }
 
+// forward declare simulationStep
+// will be implemented by simulation shader
+
 vec4 simulationStep();
+
+// use return value of simulationStep as output color
 
 void main(void) {
     gl_FragColor = simulationStep();

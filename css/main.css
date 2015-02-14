@@ -81,7 +81,8 @@ input, select, button {
 	position: absolute;
 	top: 1rem;
 	left: 20%;
-	margin-left: 1rem
+	margin-left: 1rem;
+	z-index: 3;
 }
 
 #scenarioName {
@@ -101,6 +102,7 @@ input[type=number] {
 	color: #fff;
 	text-shadow: 1px -1px 1px #000, 1px 1px 1px #000, -1px -1px 1px #000, -1px 1px 1px #000;
 	opacity: 0.5;
+	z-index: 3;
 }
 
 #frameDuration {
