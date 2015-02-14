@@ -192,7 +192,7 @@ Visualisation = {
 				var cursorSimulationPosition = Visualisation.displayToSimulationPosition(
 					cursorDisplayPosition);
 				var cursorWorldPosition = Visualisation.displayToWorldPosition(cursorDisplayPosition);
-				cursorPositionElem.innerText =
+				cursorPositionElem.textContent =
 					cursorWorldPosition.value[0].toFixed(2) + " " +
 					cursorWorldPosition.value[1].toFixed(2) + " (" +
 					cursorSimulationPosition.value[0].toFixed(2) + " " +
@@ -231,7 +231,7 @@ Visualisation = {
 					gaugeString += ": " + height.toFixed(4);
 					gaugeString += " (" + (gauge.position.value[0] * simulation.settings.worldSize).toFixed(2);
 					gaugeString += ", " + (gauge.position.value[1] * simulation.settings.worldSize).toFixed(2) + ")\n";
-					gauge.textElement.innerText = gaugeString;
+					gauge.textElement.textContent = gaugeString;
 				});
 
 				Visualisation.gauges.forEach(function (gauge) {
@@ -267,7 +267,7 @@ Visualisation = {
 				}
 
 				var tiff = write16bitTiff(waterHeight, simulation.settings.resolution, simulation.settings.resolution);
-				var filename = document.getElementById("scenarioName").innerText.trim()
+				var filename = document.getElementById("scenarioName").textContent.trim()
 						.replace(/\s/g, "_") + "_water_t" + simulation.nStepsTotal + ".tif";
 				saveContent(uint8ToBase64(tiff), filename);
 
@@ -294,7 +294,7 @@ Visualisation = {
 				}
 
 				var tiff = write16bitTiff(waterHeight, simulation.settings.resolution, simulation.settings.resolution);
-				var filename = document.getElementById("scenarioName").innerText.trim()
+				var filename = document.getElementById("scenarioName").textContent.trim()
 						.replace(/\s/g, "_") +
 						"_h" + document.getElementById("sourceWaterHeight").value +
 						"_v" + document.getElementById("sourceWaterVelocity").value +

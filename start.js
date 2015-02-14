@@ -84,7 +84,7 @@ var start = function () {
 		lastFrame = thisFrame;
 
 		if (thisFrame - lastSecond > 1000) {
-			document.getElementById("frameDuration").innerText =
+			document.getElementById("frameDuration").textContent =
 				"min " + minFrame.toFixed(1) + "ms - " +
 				"avg " +      avg.toFixed(1) + "ms - " +
 				"max " + maxFrame.toFixed(1) + "ms";
