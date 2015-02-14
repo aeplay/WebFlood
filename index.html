@@ -3,333 +3,127 @@
 	<head>
 		<title>WebFlood</title>
 		<meta charset="utf-8">
-		<style type="text/css">
-			body {
-				background:#ffffff;
-				color:#000;
-				padding:0;
-				margin:0;
-				overflow:hidden;
-				font-family: sans-serif;
 
-				-webkit-touch-callout: none;
-				-webkit-user-select: none;
-				-khtml-user-select: none;
-				-moz-user-select: none;
-				-ms-user-select: none;
-				user-select: none;
-			}
+		<!--
+		 _       __     __    ________                __
+		| |     / /__  / /_  / ____/ /___  ____  ____/ /
+		| | /| / / _ \/ __ \/ /_  / / __ \/ __ \/ __  /
+		| |/ |/ /  __/ /_/ / __/ / / /_/ / /_/ / /_/ /
+		|__/|__/\___/_.___/_/   /_/\____/\____/\__,_/
+		-->
 
-			body>p {
-				position: absolute;
-				left: 1rem;
-				top: 0;
-			}
+		<link rel="stylesheet" href="css/main.css">
+		<link rel="stylesheet" href="css/Computer%20Modern/Bright/cmun-bright.css">
+		<link rel="stylesheet" href="css/Computer%20Modern/Serif/cmun-serif.css">
 
-			#scenarioName {
-				font-family: inherit;
-				font-size: 1.5em;
-			}
+		<script src="deps/underscore-min.js"></script>
+		<script src="deps/GLOW.js"></script>
+		<script src="deps/perlin.js"></script>
+		<script src="deps/tiff.js"></script>
+		<link rel="stylesheet" href="deps/jsxgraph.css"/>
+		<script src="deps/jsxgraphcore-0.99.2.js"></script>
 
-			input[type=number] {
-				width: 5em;
-			}
-		</style>
+		<script src="lib/helpers.js"></script>
+		<script src="lib/terrainGenerator.js"></script>
+		<script src="lib/write16bitTiff.js"></script>
+
+		<script src="lib/tiledGrid.js"></script>
+		<script src="lib/flipFlopFBO.js"></script>
+		<script src="lib/camera.js"></script>
+
+		<script src="ui.js"></script>
+		<script src="simulation.js"></script>
+		<script src="visualisation.js"></script>
+		<script src="scenarios.js"></script>
+		<script src="start.js"></script>
 	</head>
+
 	<body>
-		<div id="container"></div>
-		<p><input type="text" id="scenarioName" value="no scenario loaded..."><br>
-			<span id="load">
-				<br>
-				Load scenario:<br><input type="file" id="files" name="files[]" multiple /><br><br>
-				<a id="newTerrain" href="">Random Scenario</a> -
-				Resolution: <select id="resolution">
-					<option value="128">128*128</option>
-					<option value="256" selected>256*256</option>
-					<option value="512">512*512</option>
-					<option value="1024">1024*1024 (unstable)</option>
-				</select> <br><br>
-			</span>
-			<span id="run" style="display: none;">
-				<button id="saveWater">Save Water Height</button><button id="saveTerrain">Save Terrain</button><br><br>
-				<a id="closeScenario" href="index.html">Close Scenario</a><br><br>
-				Frame duration: <span id="frameDuration">???</span><br>Simulation Steps <input type="number" value="0" id="stepsPerFrame"> per frame<br><br>
-				Source Water Height: <input id="sourceWaterHeight" type="number" value="0.0024" step="0.005"/><br>
-				Source Water Velocity: <input id="sourceWaterVelocity" type="number" value="0.00001" step="0.0005"/><br>
-				Gravity: <input id="gravity" type="number" value="9.81" step="0.001"/><br><br>
-				<em>Friction</em> -
-				Manning coefficient: <input id="manningCoefficient" type="number" value="0.070" step="0.001"/><br><br>
-				Drainage: <input id="drainageAmount" type="number" value="0" step="0.00001"/><br><br>
-				<!--Amount of water: <span id="waterSum"></span><br><br>-->
-				<input type="checkbox" checked id="toggleWater"><label for="toggleWater">Display Water</label><br>
-				<input type="checkbox" id="toggleFloodDuration"><label for="toggleWater">Display Flood Duration</label><br>
-				<input type="checkbox" id="toggleMaxVelocity"><label for="toggleWater">Display Max Velocity</label><br>
-				<input type="checkbox" id="toggleMaxDepth"><label for="toggleWater">Display Max Depth</label><br><br>
-			</span>
-		</p>
-		<script type="text/javascript" src="underscore-min.js"></script>
-		<script type="text/javascript" src="GLOW.js"></script>
-		<script type="text/javascript" src="helpers.js"></script>
+		<div id="viewport"></div>
 
-		<script type="text/javascript" src="perlin.js"></script>
-		<script type="text/javascript" src="terrainGenerator.js"></script>
-		<script type="text/javascript" src="tiff.js"></script>
-		<script type="text/javascript" src="write16bitTiff.js"></script>
+		<div id="intro" class="load">
+			<h1>WebFlood</h1>
+			<h2>Interactive Shallow&ndash;Water Simulations in City Environments</h2>
 
-		<script type="text/javascript" src="tiledGrid.js"></script>
-		<script type="text/javascript" src="flipFlopFBO.js"></script>
+			<h3>Scenarios</h3>
+			<span id="scenarios"></span>
 
-		<script type="text/javascript" src="camera.js"></script>
-		<script type="text/javascript" src="simulation.js"></script>
-		<script type="text/javascript" src="visualisation.js"></script>
+			<h3>Abstract</h3>
+			<p id="abstract">
+				WebGL offers not only a graphics pipeline for modern web browsers,
+				but can also be used as a simple GPGPU computation environment,
+				making much more sophisticated web applications possible.
+				As a proof-of-concept, <em>WebFlood,</em> a realtime, fully browser
+				based flood simulation and visualisation was implemented. It employs
+				a semi-lagrangian discretisation of the shallow-water equations -
+				all computation is done by GLSL shaders on the GPU. The simulation
+				state is displayed in a 3D visualisation, as part of a web page that
+				allows user interaction with the simulation. WebFlood performs well
+				in the classical 2D dam-break scenario of Fraccarollo and Toro (1995)
+				and closely reproduces urban flooding behaviour of Iowa City (USA),
+				given digital elevation data. Based on its cross-platform compatibility
+				and simple distribution, two main applications are suggested: interactive
+				public flood information and simulation-aided education for the example of hydrology.
+			</p>
+		</div>
 
-		<script type="text/javascript">
-			var devicePixelRatio = 1.0// || window.devicePixelRatio || 1;
+		<div id="frameDuration"></div>
+		<div id="cursorPosition"></div>
 
-			// set the size of the drawingBuffer based on the size it's displayed.
+		<div id="tools" class="run">
+			<button id="addGauge">Add Gauge</button>
+			<button id="paintObstacles">Paint Obstacles</button>
+			<button id="createInundationMap">Create Inundation Map</button>
+			<!--<button id="saveWater">Save Water Height</button>-->
+			<!--<button id="saveTerrain">Save Terrain</button>-->
+		</div>
 
-			var context = new GLOW.Context({
-				clear: {red: 1, green: 1, blue: 1},
-				preserveDrawingBuffer: true,
-				width: window.innerWidth * devicePixelRatio,
-				height: window.innerHeight * devicePixelRatio
-			});
+		<div id="playback" class="run">
+			<input type="number" value="0" id="stepsPerFrame">
+			<label for="stepsPerFrame">Simulation Speed</label>
+		</div>
 
-			assureRequiredGLFeatures(context);
-			
-			var container = document.getElementById("container");
-			context.domElement.style.height = "100%";
-			context.domElement.style.width = "100%";
-			container.appendChild(context.domElement);
+		<div id="sidebar" class="run">
+			<a id="closeScenario" href="index.html">&laquo; Back</a>
+			<h2 id="scenarioName"></h2>
 
-			document.getElementById("resolution").value = gridResolution;
-			document.getElementById("resolution").onchange = function () {
-				window.location = "?res=" + this.value;
-			};
+			<h3>Gauges</h3>
 
-			document.getElementById("newTerrain").href = "?res=" + gridResolution + "&seed=" + Math.floor(Math.random() * 10000);
+			<div id="gauges"></div>
 
-			var waterMapUploaded = false;
-			var satImageUploaded = false;
+			<h3>Simulation Parameters</h3>
 
-			var waterData;
-			var satImage;
-			var frictionData;
-			var terrainData;
-			var startNSteps;
+			<label for="sourceWaterHeight">Source Water Height</label>
+			<input id="sourceWaterHeight" type="number" value="0.1" step="0.05"/><br>
 
-			var waitOrInit = function () {
-				if (terrainData && (!waterMapUploaded || waterData) && (!satImageUploaded || satImage)) {
-					Simulation.init(waterData, terrainData, startNSteps, frictionData);
-					start();
-				}
-			};
+			<label for="sourceWaterVelocity">Source Water Velocity</label>
+			<input id="sourceWaterVelocity" type="number" value="0.00001" step="0.01"/><br>
 
-			document.getElementById("files").addEventListener("change", function (evt) {
-				var files = evt.target.files; // FileList object
+			<label for="gravity">Gravity</label>
+			<input id="gravity" type="number" value="9.81" step="0.001"/><br><br>
 
-				// files is a FileList of File objects. List some properties.
-				for (var i = 0, file; file = files[i]; i++) {
-					console.log (file.name);
+			<label for="manningCoefficient">Manning friction coefficient</label>
+			<input id="manningCoefficient" type="number" value="0.070" step="0.001"/><br><br>
 
-					var reader = new FileReader();
+			<label for="drainageAmount">Drainage</label>
+			<input id="drainageAmount" type="number" value="0" step="0.000003"/><br><br>
 
-					if (files[i].name.indexOf("water") !== -1) {
-						waterMapUploaded = true;
-						startNSteps = parseInt(file.name.match(/water_t(\d+)\.tif/)[1], 10);
-						reader.onload = function (e) {
-							waterData = (new TIFFParser()).parseTIFF(e.target.result).data;
-							waitOrInit();
-						};
-						reader.readAsArrayBuffer(file);
-					} else if (file.name.indexOf("friction") !== -1) {
-						reader.onload = function (e) {
-							frictionData = (new TIFFParser()).parseTIFF(e.target.result).data;
-						};
-						reader.readAsArrayBuffer(file);
-					} else if (file.name.indexOf("sat") !== -1) {
-						satImageUploaded = true;
-						reader.onload = function (e) {
-							satImage = new Image();
-							satImage.src = e.target.result;
-							waitOrInit();
-						};
-						reader.readAsDataURL(file);
-					} else if (file.name.indexOf("terrain") !== -1) {
-						document.getElementById("scenarioName").value = file.name
-								.replace("terrain", "")
-								.replace(".tif", "")
-								.replace(/_/g, " ")
-								.replace(/\s+/g, " ")
-								.trim();
-						reader.onload = function (e) {
-							var tiff = (new TIFFParser()).parseTIFF(e.target.result);
-							gridResolution = tiff.width;
-							terrainData = tiff.data;
-							waitOrInit();
-						};
-						reader.readAsArrayBuffer(file);
-					}
-				}
+			<h3>Visualisation Settings</h3>
 
-			}, false);
+			<input type="checkbox" checked id="showWater">
+			<label for="showWater">Display Water</label><br>
 
-			var seed = parseInt(getParameterByName("seed"));
+			<input type="checkbox" id="showFloodDuration">
+			<label for="showFloodDuration">Display Flood Duration</label><br>
 
-			if (seed) {
-				terrainData = new Float32Array(gridResolution * gridResolution);
-				document.getElementById("scenarioName").value = "Random Scenario " + seed;
+			<input type="checkbox" id="showMaxVelocity">
+			<label for="showMaxVelocity">Display Max Velocity</label><br>
 
-				var i = 0;
+			<input type="checkbox" id="showMaxDepth">
+			<label for="showMaxDepth">Display Max Depth</label><br>
 
-				var octaves = 16;
-				noise.seed(seed);
-
-				for (var y = 0; y < gridResolution; y++) {
-					for (var x = 0; x < gridResolution; x++) {
-						terrainData[i] = Math.max(0, terrain(x, y));
-						i++;
-					}
-				}
-
-				setTimeout(function () {
-					Simulation.init(null, terrainData);
-					start();
-				}, 0);
-			}
-
-			var lastFrame = performance.now();
-			var lastSecond = performance.now();
-			var minFrame = 1000;
-			var maxFrame = 0;
-			var nFrames = 0;
-			var nFramesTotal = 0;
-
-			var start = function (render) {
-				document.getElementById("load").style.display = "none";
-				document.getElementById("run").style.display = "inline";
-
-				Visualisation.init(satImage);
-
-				var render = function () {
-					window.requestAnimationFrame(render);
-
-					var thisFrame = performance.now();
-					var frameDuration = thisFrame - lastFrame;
-					if (frameDuration > maxFrame) maxFrame = frameDuration;
-					if (frameDuration < minFrame) minFrame = frameDuration;
-					var avg = (thisFrame - lastSecond) / nFrames;
-					lastFrame = thisFrame;
-
-					if (thisFrame - lastSecond > 1000) {
-						document.getElementById("frameDuration").innerText = "min " + minFrame.toFixed(1) + "ms - avg " +
-						avg.toFixed(1) + "ms - max " + maxFrame.toFixed(1) + "ms";
-						minFrame = 1000;
-						maxFrame = 0;
-						nFrames = 0;
-						lastSecond = thisFrame;
-					}
-
-					nFrames ++;
-					nFramesTotal ++;
-
-					context.cache.clear();
-
-					Simulation.update();
-					Visualisation.render();
-				};
-
-				window.requestAnimationFrame(render);
-			};
-
-			var showWater = true;
-			var showFloodDuration = false;
-			var showMaxVelocity = false;
-			var showMaxDepth = false;
-
-			var stepsPerFrame = document.getElementById("stepsPerFrame").valueAsNumber;
-
-			var saveWaterNextFrame = false;
-
-			var sourceWaterHeight = document.getElementById("sourceWaterHeight").valueAsNumber;
-			var sourceWaterVelocity = document.getElementById("sourceWaterVelocity").valueAsNumber;
-
-			var gravity = document.getElementById("gravity").valueAsNumber;
-			var correctGravity = function (g) {
-				var metersPerWorld = worldSize;
-				return g/metersPerWorld;
-			};
-			var correctedGravity = correctGravity(gravity);
-			console.log(correctedGravity);
-
-			var manningCoefficient = document.getElementById("manningCoefficient").valueAsNumber;
-			var correctManningCoefficient = function (n) {
-				var metersPerWorld = worldSize;
-				return n * Math.pow(metersPerWorld, 1/3);
-			};
-			var correctedManningCoefficient = correctManningCoefficient(manningCoefficient);
-			console.log(correctedManningCoefficient);
-
-			var drainageAmount = document.getElementById("drainageAmount").valueAsNumber;
-
-			document.getElementById("stepsPerFrame").onchange = function () {
-				stepsPerFrame = this.valueAsNumber;
-			};
-
-			document.getElementById("sourceWaterHeight").onchange = function () {
-				sourceWaterHeight = this.valueAsNumber;
-				console.log("sourceWaterHeight", sourceWaterHeight);
-			};
-
-			document.getElementById("sourceWaterVelocity").onchange = function () {
-				sourceWaterVelocity = this.valueAsNumber;
-				console.log("sourceWaterVelocity", sourceWaterVelocity);
-			};
-
-			document.getElementById("gravity").onchange = function () {
-				gravity = this.valueAsNumber;
-				console.log("gravity", gravity);
-				correctedGravity = correctGravity(gravity);
-				console.log(correctedGravity);
-			};
-
-			document.getElementById("manningCoefficient").onchange = function () {
-				manningCoefficient = this.valueAsNumber;
-				console.log("manningCoefficient", manningCoefficient);
-				correctedManningCoefficient = correctManningCoefficient(manningCoefficient);
-				console.log(correctedManningCoefficient);
-			};
-
-			document.getElementById("drainageAmount").onchange = function () {
-				drainageAmount = this.valueAsNumber;
-				console.log("drainageAmount", drainageAmount);
-			};
-
-			document.getElementById("toggleWater").onclick = function () {
-				showWater = this.checked;
-			};
-
-			document.getElementById("toggleFloodDuration").onclick = function () {
-				showFloodDuration = this.checked;
-			};
-
-			document.getElementById("toggleMaxVelocity").onclick = function () {
-				showMaxVelocity = this.checked;
-			};
-
-			document.getElementById("toggleMaxDepth").onclick = function () {
-				showMaxDepth = this.checked;
-			};
-
-			document.getElementById("saveWater").onclick = function () {
-				saveWaterNextFrame = true;
-			};
-
-			document.getElementById("saveTerrain").onclick = function () {
-				var tiff = write16bitTiff(terrainData, gridResolution, gridResolution);
-				var filename = document.getElementById("scenarioName").value.trim().replace(/\s/g, "_") + "_terrain.tif";
-				saveContent(uint8ToBase64(tiff), filename);
-			}
-		</script>
+			<input type="checkbox" id="showTerrainContours">
+			<label for="showTerrainContours">Display Terrain Contours</label>
+		</div>
 	</body>
 </html>
