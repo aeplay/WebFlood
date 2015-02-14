@@ -25,7 +25,7 @@ UI = {
 			elem.onclick = callback;
 		});
 
-		viewportElem.onmousewheel = function (event) {
+		viewportElem.onwheel = function (event) {
 			zoomCamera( 10 * Math.sqrt(Math.abs(event.deltaY)) * (event.deltaY > 0 ? 1 : -1));
 		};
 
@@ -47,7 +47,8 @@ UI = {
 		};
 
 		viewportElem.onmousemove = function (event) {
-			if (UI.rotatingCamera) rotateCamera(-event.movementX/200, event.movementY/200);
+			if (UI.cursorX !== undefined && UI.rotatingCamera)
+				rotateCamera(-(event.clientX - UI.cursorX)/200, (event.clientY - UI.cursorY)/200);
 			UI.cursorX = event.clientX;
 			UI.cursorY = event.clientY;
 		};
