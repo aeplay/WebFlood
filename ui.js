@@ -53,7 +53,7 @@ UI = {
 			UI.cursorY = event.clientY;
 		};
 
-		viewportElem.onkeydown = function (e) {
+		document.onkeydown = function (e) {
 			if (e.keyCode == '38') {
 				moveCamera(-10, 0);
 			}

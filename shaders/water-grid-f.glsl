@@ -31,8 +31,8 @@ void main(void) {
 
     float edgyness = max(xEdgyness, yEdgyness);
 
-    //color = mix(color, vec3(1.0, 1.0, 1.0), min(0.3, edgyness/(30.0 * max(xGradient, yGradient))));
-    color = mix(color, vec3(1.0, 1.0, 1.0), min(0.6, f.x));
+    color = mix(color, vec3(1.0, 1.0, 1.0), min(0.3, edgyness/(30.0 * max(xGradient, yGradient))));
+    //color = mix(color, vec3(1.0, 1.0, 1.0), min(0.6, f.x));
 
     gl_FragColor = vec4(color, alpha);
 }
