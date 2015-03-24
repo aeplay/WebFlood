@@ -27,7 +27,7 @@ Scenarios = {
 		[].forEach.call(document.getElementsByClassName("run"), function (elem){
 			elem.style.display = "block";
 		});
-		document.getElementById("scenarioName").innerHTML = "<small>Loading:</small><br/>" + scenarioName;
+		document.getElementById("scenarioName").innerHTML = scenarioName + "<br/><small>Loading:</small>";
 
 		var nMapsToLoad = 0;
 

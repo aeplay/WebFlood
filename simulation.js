@@ -11,7 +11,8 @@ var Simulation = {
 			gravity: 9.81,
 			manningCoefficient: 0.013,
 			sourceWaterHeight: 0,
-			sourceWaterVelocity: 0
+			sourceWaterVelocity: 0,
+			minFluxArea: 0.001
 		});
 
 		_.pairs(settings).forEach(function (pair) {console.log(pair[0], pair[1])});
@@ -22,12 +23,12 @@ var Simulation = {
 		var initialConditions = new Float32Array(settings.resolution * settings.resolution * 4);
 
 		if (settings.water) for (var p = 0; p < settings.terrain.length; p++)
-			initialConditions[p * 4 + 2] = (settings.water[p] - 0.5) * 2 / (settings.worldSize);
+			initialConditions[p * 4 + 2] = (settings.water[p] - 0.5) * 2;
 		else for (p = 0; p < settings.terrain.length; p++)
 			initialConditions[p * 4 + 2] = -0.0001;//0.04 - data.terrain[p] / (settings.worldSize);
 
 		for (p = 0; p < settings.terrain.length; p++)
-			initialConditions[p * 4 + 3] = settings.heightScale * settings.terrain[p] / (settings.worldSize)
+			initialConditions[p * 4 + 3] = settings.heightScale * settings.terrain[p] / (settings.worldSize);
 
 		var frictionMap = new Float32Array(settings.resolution * settings.resolution * 4);
 		if (settings.frictionMap)
@@ -66,7 +67,8 @@ var Simulation = {
 		var advectionStep = defineSimulationStep('advect-height-velocity', {});
 
 		var heightIntegrationStep = defineSimulationStep('update-height', {
-			drainageAmount: new GLOW.Float(0)
+			drainageAmount: new GLOW.Float(0),
+			minFluxArea: new GLOW.Float(settings.minFluxArea)
 		});
 
 		var frictionTexture = new GLOW.Texture({
@@ -117,7 +119,7 @@ var Simulation = {
 			data: {
 				texture: undefined,
 				center: new GLOW.Vector2(0, 0),
-				height: new GLOW.Float(0.01),
+				height: new GLOW.Float(0.003),
 				vertices: GLOW.Geometry.Plane.vertices(),
 				uvs: GLOW.Geometry.Plane.uvs()
 			},

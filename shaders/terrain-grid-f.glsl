@@ -4,6 +4,11 @@
 
 #extension GL_OES_standard_derivatives : enable
 
+uniform	mat4 transform;
+uniform mat4 cameraInverse;
+uniform mat4 cameraProjection;
+
+
 uniform sampler2D texture;
 uniform sampler2D damage;
 uniform float showDuration;
@@ -14,8 +19,10 @@ uniform float maxDisplayWaterHeight;
 varying vec2 uv;
 
 uniform float useSat;
+uniform float useLight;
 uniform sampler2D sat;
 uniform float heightScale;
+uniform float unit;
 
 void main(void) {
     vec4 c = texture2D(texture, uv);
@@ -30,12 +37,36 @@ void main(void) {
             color = vec3(bw, bw, bw);
         }
     } else {
-         float b = 0.1 + 0.8 * c.w * heightScale;
-         color = vec3(b, b, b);
+        color = vec3(0.4, 0.4, 0.4);
+    }
+
+    if (useLight > 0.0) {
+        float off = 1.0;
+
+        vec4 cL = texture2D(texture, uv + vec2(-off * unit, 0.0));
+        vec4 cR = texture2D(texture, uv + vec2(off * unit, 0.0));
+        vec4 cT = texture2D(texture, uv + vec2(0.0, -off * unit));
+        vec4 cB = texture2D(texture, uv + vec2(0.0, off * unit));
+
+        float gx = (cR.w - cL.w) / off;
+        float gy = (cB.w - cT.w) / off;
+
+        vec3 normal = normalize(vec3(0.0, 0.0, 1.0) - 1000.0 * vec3(gx, gy, 0.0));
+        vec3 lightDir = normalize(vec3(1.0, 1.0, 1.0));
+
+        float reflectionIntensity = dot(normal, lightDir);
+
+        vec3 cameraLookDir = (cameraInverse * vec4(0.0, 0.0, 1.0, 0.0)).xyz;
+
+        float b = reflectionIntensity * dot(normal, cameraLookDir);
+
+        vec3 sunColor = vec3(0.4, 0.4, 0.3);
+
+        color = 0.5 * (2.0 * color + b * sunColor - (1.0 - b) * sunColor);
     }
 
     if (showDuration > 0.0) {
-        color.r += d.r;
+        color.r += mod(d.r, 1000.0) / 1000.0;
     }
 
     if (showMaxVelocity > 0.0) {
@@ -50,7 +81,7 @@ void main(void) {
         float distanceToLine = mod(c.w, 1.0/1024.0) * 1024.0;
         distanceToLine = min(1.0 - distanceToLine, distanceToLine);
         float gradient = 100.0 * length(vec2(dFdx(c.w) , dFdy(c.w)));
-        float edgyness = smoothstep(1.0, 0.0, 0.3 * distanceToLine / gradient);
+        float edgyness = smoothstep(1.0, 0.0, 0.2 * distanceToLine / gradient);
 
         color = color + vec3(min(0.3, edgyness/(10.0 * gradient)));
     }

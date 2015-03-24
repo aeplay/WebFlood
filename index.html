@@ -79,13 +79,14 @@
 		</div>
 
 		<div id="playback" class="run">
+			<button id="playPause">&#9654;</button>
 			<input type="number" value="0" id="stepsPerFrame">
 			<label for="stepsPerFrame">Simulation Speed</label>
 		</div>
 
 		<div id="sidebar" class="run">
-			<a id="closeScenario" href="index.html">&laquo; Back</a>
 			<h2 id="scenarioName"></h2>
+			<a id="closeScenario" href="index.html">&laquo; Back</a>
 
 			<h3>Gauges</h3>
 
@@ -93,25 +94,24 @@
 
 			<h3>Simulation Parameters</h3>
 
-			<label for="sourceWaterHeight">Source Water Height</label>
-			<input id="sourceWaterHeight" type="number" value="0.1" step="0.05"/><br>
+			<input id="sourceWaterHeight" type="number" value="0.1" step="0.05"/>
+			<label for="sourceWaterHeight">Source Water Height</label><br>
 
-			<label for="sourceWaterVelocity">Source Water Velocity</label>
-			<input id="sourceWaterVelocity" type="number" value="0.00001" step="0.01"/><br>
+			<input id="sourceWaterVelocity" type="number" value="0.00001" step="0.01"/>
+			<label for="sourceWaterVelocity">Source Water Velocity</label><br>
 
-			<label for="gravity">Gravity</label>
-			<input id="gravity" type="number" value="9.81" step="0.001"/><br><br>
+			<input id="gravity" type="number" value="9.81" step="0.001"/>
+			<label for="gravity">Gravity</label><br><br>
 
-			<label for="manningCoefficient">Manning friction coefficient</label>
-			<input id="manningCoefficient" type="number" value="0.070" step="0.001"/><br><br>
+			<input id="manningCoefficient" type="number" value="0.070" step="0.001"/>
+			<label for="manningCoefficient">Manning friction coefficient</label><br><br>
 
-			<label for="drainageAmount">Drainage</label>
-			<input id="drainageAmount" type="number" value="0" step="0.000003"/><br><br>
+			<input id="drainageAmount" type="number" value="0" step="0.000003"/>
+			<label for="drainageAmount">Drainage</label><br><br>
 
 			<h3>Visualisation Settings</h3>
 
-			<input type="checkbox" checked id="showWater">
-			<label for="showWater">Display Water</label><br>
+			<h4>Overlays</h4>
 
 			<input type="checkbox" id="showFloodDuration">
 			<label for="showFloodDuration">Display Flood Duration</label><br>
@@ -120,10 +120,32 @@
 			<label for="showMaxVelocity">Display Max Velocity</label><br>
 
 			<input type="checkbox" id="showMaxDepth">
-			<label for="showMaxDepth">Display Max Depth</label><br>
+			<label for="showMaxDepth">Display Max Depth</label><br><br>
+
+			<h4>Terrain</h4>
+
+			<input type="checkbox" id="showSatellite">
+			<label for="showSatellite">Display Satellite Image</label><br>
+
+			<input type="checkbox" checked id="showLight">
+			<label for="showLight">Apply Lighting</label><br>
 
 			<input type="checkbox" id="showTerrainContours">
 			<label for="showTerrainContours">Display Terrain Contours</label>
+
+			<h4>Water</h4>
+
+			<input type="checkbox" checked id="showWater">
+			<label for="showWater">Display Water</label><br>
+
+			<input type="checkbox" checked id="showWaterLight">
+			<label for="showWaterLight">Apply Lighting</label><br>
+
+			<input type="checkbox" id="showFlow">
+			<label for="showFlow">Visualize Flow</label><br>
+
+			<input type="checkbox" id="showGrid">
+			<label for="showGrid">Display Grid</label>
 		</div>
 	</body>
 </html>

@@ -52,10 +52,32 @@ var start = function () {
 			"showFloodDuration": Visualisation.toggles,
 			"showMaxVelocity": Visualisation.toggles,
 			"showMaxDepth": Visualisation.toggles,
-			"showTerrainContours": Visualisation.toggles
+			"showSatellite": Visualisation.toggles,
+			"showLight": Visualisation.toggles,
+			"showTerrainContours": Visualisation.toggles,
+			"showWaterLight": Visualisation.toggles,
+			"showFlow": Visualisation.toggles,
+			"showGrid": Visualisation.toggles
 		},
 
 		triggers: {
+			"playPause": function () {
+				if (!Simulation.parameters.stepsPerFrame) {
+					var inputValue = document.getElementById("stepsPerFrame").valueAsNumber;
+					if (inputValue){
+						Simulation.parameters.stepsPerFrame = inputValue;
+						this.innerHTML = "&#9646;&#9646;";
+					} else {
+						document.getElementById("stepsPerFrame").value = 1;
+						Simulation.parameters.stepsPerFrame = 1;
+						this.innerHTML = "&#9646;&#9646;";
+					}
+				} else {
+					Simulation.parameters.stepsPerFrame = 0;
+					this.innerHTML = "&#9654;";
+				}
+
+			},
 			"saveWater": function () {
 				Visualisation.saveWaterNextFrame = true;
 			},

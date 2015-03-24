@@ -7,7 +7,7 @@ UI = {
 			var elem = document.getElementById(numberName);
 			if (!elem) {console.warn("#" + numberName + " not found"); return;}
 			target[numberName] = elem.valueAsNumber;
-			elem.onchange = function () {target[numberName] = this.valueAsNumber;};
+			elem.oninput = function () {target[numberName] = this.valueAsNumber;};
 		});
 
 		Object.keys(setup.toggles).forEach(function (toggleName) {

@@ -1,8 +1,8 @@
 uniform float drainageAmount;
+uniform float minFluxArea;
 
 const float wettingThreshold = 0.000001;
 const float newlyWetHeight = 0.0000003;
-const float minFluxArea = 0.01;
 
 vec4 simulationStep() {
     vec4 here = simData(pos);
@@ -29,6 +29,7 @@ vec4 simulationStep() {
         newHeight = H(here) - fluxArea * velocityDivergence * dt;
         newHeight -= drainageAmount;
         newHeight = max(-0.00001, newHeight);
+        newHeight = min(H(here) * 2.0, newHeight);
     }
 
     return vec4(V(here), newHeight, T(here));

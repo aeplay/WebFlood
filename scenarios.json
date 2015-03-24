@@ -8,14 +8,41 @@
       "dt": 0.25,
       "gravity": 9.81,
       "manningCoefficient": 0.07,
+      "minFluxArea": 0.01,
       "frictionMap": "scenarios/iowa/iowa_friction_better.tif",
-      "sourceWaterHeight": 5,
+      "sourceWaterHeight": 7,
       "sourceWaterVelocity": 0.5
     },
     "visualisation": {
       "satellite": "scenarios/iowa/iowa_sat.jpg",
       "displayHeightScale": 3,
-      "maxDisplayWaterHeight": 10
+      "maxDisplayWaterHeight": 10,
+      "flowStrength": 1000,
+      "flowLength": 50
+    }
+  },
+
+  "Lake Isabella" : {
+    "simulation": {
+      "resolution": 512,
+      "terrain": "scenarios/lake_isabella/terrain_main_break.tif",
+      "water": "scenarios/lake_isabella/water.tif",
+      "worldSize": 34000,
+      "heightScale": 870,
+      "dt": 0.25,
+      "gravity": 9.81,
+      "manningCoefficient": 0.3,
+      "minFluxArea": 0.015,
+      "NO_frictionMap": "scenarios/iowa/iowa_friction_better.tif",
+      "sourceWaterHeight": 95,
+      "sourceWaterVelocity": 0.1
+    },
+    "visualisation": {
+      "satellite": "scenarios/lake_isabella/sat.jpg",
+      "displayHeightScale": 3,
+      "maxDisplayWaterHeight": 10,
+      "flowStrength": 3000,
+      "flowLength": 80
     }
   },
 
@@ -30,6 +57,8 @@
       "manningCoefficient": 0.013
     },
     "visualisation" : {
+      "flowStrength": 8,
+      "flowLength": 300,
       "gauges": [
         [2.000, 1.180, "-5A", [
           [0, 0.6, "o"],
@@ -112,6 +141,7 @@
       "manningCoefficient": 0.013
     },
     "visualisation" : {
+      "flowStrength": 4,
       "gauges": [
         [2.000, 1.180, "-5A", [
           [0, 0.6, "o"],

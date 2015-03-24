@@ -7,7 +7,7 @@ uniform vec2 center;
 uniform float height;
 varying vec2 uv;
 
-float radius = 0.01;
+float radius = 0.005;
 
 void main(void) {
     //float dt = 1.0 / 60.0;
@@ -17,5 +17,5 @@ void main(void) {
     if (distance(pos, center) > radius)
         gl_FragColor = data;
     else
-        gl_FragColor = vec4(data.xy, 0.0, height);
+        gl_FragColor = vec4(data.xy, -0.001, mix(height, data.w, distance(pos, center)/radius));
 }

@@ -31,13 +31,17 @@ input, select, button {
 	font-size: inherit;
 	padding: 0.25em;
 	border: 1px solid #ddd;
+}
 
+select, button {
+	cursor: pointer;
 }
 
 #viewport {
 	display: none;
 	position: absolute;
 	left: 20%;
+	background-color: #333333;
 }
 
 #intro {
@@ -83,6 +87,13 @@ input, select, button {
 	left: 20%;
 	margin-left: 1rem;
 	z-index: 3;
+	background-color: #fff;
+	padding-right: 0.5rem;
+}
+
+#playPause {
+	width: 4rem;
+	height: 3rem;
 }
 
 #scenarioName {
@@ -94,6 +105,7 @@ input, select, button {
 
 input[type=number] {
 	width: 5em;
+	text-align: right;
 }
 
 #frameDuration, #cursorPosition {

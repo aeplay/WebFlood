@@ -37,6 +37,7 @@ Visualisation = {
 				texture: undefined,
 				sat: satTexture,
 				useSat: new GLOW.Float(satImage ? 1 : 0),
+				useLight: new GLOW.Float(1),
 				heightScale: new GLOW.Float(simulation.parameters.heightScale),
 				displayHeightScale: new GLOW.Float(Visualisation.displayScale * Visualisation.displayHeightScale),
 				damage: undefined,
@@ -64,13 +65,16 @@ Visualisation = {
 				transform: new GLOW.Matrix4(),
 				cameraInverse: camera.inverse,
 				cameraProjection: camera.projection,
-				unit: new GLOW.Float(1/simulation.settings.resolution)
+				unit: new GLOW.Float(1/simulation.settings.resolution),
+				useFlow: new GLOW.Float(0),
+				useLighting: new GLOW.Float(1),
+				useGrid: new GLOW.Float(0)
 			}
 		});
 
 		var flowVizFBO = new GLOW.FBO({
-			width: Math.min(simulation.settings.resolution * 4, 1024),
-			height: Math.min(simulation.settings.resolution * 4, 1024),
+			width: Math.min(simulation.settings.resolution * 4, 2048),
+			height: Math.min(simulation.settings.resolution * 4, 2048),
 			type: GL.FLOAT,
 			magFilter: GL.LINEAR,
 			minFilter: GL.LINEAR,
@@ -82,10 +86,13 @@ Visualisation = {
 			fragmentShader: loadSynchronous("shaders/flow-viz-f.glsl"),
 			data: {
 				noise: new GLOW.Texture({data: "noise.png", minFilter: GL.NEAREST}),
+				noiseDots: new GLOW.Texture({data: "noiseDots.png", minFilter: GL.NEAREST}),
 				vertices: GLOW.Geometry.Plane.vertices(),
 				uvs: GLOW.Geometry.Plane.uvs(),
 				time: new GLOW.Float(0),
 				unit: new GLOW.Float(1 / simulation.settings.resolution),
+				flowStrength: new GLOW.Float(parameters.flowStrength || 1),
+				flowLength: new GLOW.Float(parameters.flowLength || 1),
 				dt: new GLOW.Float(simulation.settings.dt)
 			},
 			indices: GLOW.Geometry.Plane.indices()
@@ -168,9 +175,35 @@ Visualisation = {
 					tile.uniforms.showMaxDepth.data = new GLOW.Float(show ? 1.0 : 0.0)
 				});
 			},
+			set showSatellite (show) {
+				terrainMeshTiles.forEach(function (tile) {
+					tile.uniforms.useSat.data = new GLOW.Float(satImage && show ? 1.0 : 0.0)
+				});
+			},
+			set showLight (show) {
+				terrainMeshTiles.forEach(function (tile) {
+					tile.uniforms.useLight.data = new GLOW.Float(show ? 1.0 : 0.0)
+				});
+			},
 			set showTerrainContours (show) {
 				terrainMeshTiles.forEach(function (tile) {
 					tile.uniforms.showTerrainContours.data = new GLOW.Float(show ? 1.0 : 0.0)
+				});
+			},
+			set showFlow (show) {
+				doFlowViz = show;
+				waterMeshTiles.forEach(function (tile) {
+					tile.uniforms.useFlow.data = new GLOW.Float(show ? 1.0 : 0.0)
+				});
+			},
+			set showWaterLight (show) {
+				waterMeshTiles.forEach(function (tile) {
+					tile.uniforms.useLight.data = new GLOW.Float(show ? 1.0 : 0.0)
+				});
+			},
+			set showGrid (show) {
+				waterMeshTiles.forEach(function (tile) {
+					tile.uniforms.useGrid.data = new GLOW.Float(show ? 1.0 : 0.0)
 				});
 			}
 		};
@@ -183,6 +216,8 @@ Visualisation = {
 		var visualTime = 0;
 		var maxGaugeHeight = 0.001;
 		var firstFrame = true;
+
+		var doFlowViz = false;
 
 		Visualisation.render = function () {
 			visualTime = 0.33 * simulation.nStepsTotal;
@@ -304,7 +339,7 @@ Visualisation = {
 				waterSumEncodeFBO.unbind();
 			}
 
-			if (Visualisation.toggles.showWater) {
+			if (doFlowViz && Visualisation.toggles.showWater) {
 				flowVizFBO.bind();
 				flowVizStep.uniforms.texture.data = simulation.state.texture;
 				flowVizStep.uniforms.time.data = new GLOW.Float(visualTime);

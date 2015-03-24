@@ -10,6 +10,7 @@ uniform float nTiles1d;
 uniform float tileWidth;
 uniform float x;
 uniform float y;
+uniform float unit;
 
 uniform sampler2D texture;
 uniform float displayHeightScale;
